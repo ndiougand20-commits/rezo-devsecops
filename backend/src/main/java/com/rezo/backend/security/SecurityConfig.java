@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -48,7 +50,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/", "/ping").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/schools/**", "/api/companies/**", "/api/offers/**", "/api/packs/**").permitAll()
 
@@ -69,9 +71,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/packs/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/packs/**").hasRole("ADMIN")
 
-                        // Dev/test: delete all users (authenticated only)
-                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users/**").authenticated()
+                        // Dev/test destructive operations remain restricted to administrators.
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users/**").hasRole("ADMIN")
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

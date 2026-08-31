@@ -10,6 +10,7 @@ Les images ont été analysées avec Trivy en limitant le résultat aux niveaux 
 |---|---:|---:|---:|---:|
 | Image initiale | 80 | 10 | 90 | 57 |
 | Après Spring Boot 4.0.6 et Alpine 3.22 récent | 19 | 3 | 22 | 17 |
+| Image finale après surcharges correctives | 0 | 0 | 0 | 0 |
 
 Cette première remédiation réduit les occurrences bloquantes de 75,6 %. Le scan a notamment confirmé la disparition des alertes Spring Boot 4.0.3, Spring Security 7.0.3 et de nombreux paquets Alpine anciens.
 
@@ -29,7 +30,7 @@ Cette première remédiation réduit les occurrences bloquantes de 75,6 %. Le sc
 | GHSA-r7wm-3cxj-wff9 | Jackson Core 2.21.2 | 2.21.4 | Haute |
 | CVE-2026-14456 | OpenSSL/`libcrypto3` 3.5.7-r0 | 3.5.8-r0 | Haute |
 
-Les versions correctives ci-dessus sont surchargées dans le `pom.xml`; l'image finale exécute également la mise à niveau des paquets Alpine pendant sa construction. Le scan final fait foi pour le statut de la quality gate.
+Les versions correctives ci-dessus sont surchargées dans le `pom.xml`; l'image finale exécute également la mise à niveau des paquets Alpine pendant sa construction. Le scan final ne produit plus aucune vulnérabilité HIGH ou CRITICAL corrigible et satisfait donc la quality gate Trivy image.
 
 ## Interprétation
 

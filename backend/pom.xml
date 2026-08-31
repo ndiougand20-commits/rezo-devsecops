@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.3</version>
+		<version>4.0.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.rezo</groupId>
@@ -28,6 +28,13 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Correctifs de sécurité publiés après le BOM Spring Boot 4.0.6. -->
+		<spring-framework.version>7.0.8</spring-framework.version>
+		<spring-data-bom.version>2025.1.6</spring-data-bom.version>
+		<tomcat.version>11.0.22</tomcat.version>
+		<postgresql.version>42.7.12</postgresql.version>
+		<jackson-2-bom.version>2.21.4</jackson-2-bom.version>
+		<jackson-bom.version>3.1.4</jackson-bom.version>
 	</properties>
 	<dependencies>
 		<dependency>

@@ -107,7 +107,7 @@ Une **CWE** décrit une famille générique de faiblesse dans la conception ou l
 
 Le premier scan Trivy de l'image a produit 90 occurrences corrigibles de niveau HIGH ou CRITICAL, représentant 57 identifiants CVE/GHSA uniques. Le passage de Spring Boot 4.0.3 à 4.0.6 et d'une ancienne image Alpine à Temurin 21.0.12 sur Alpine 3.22 a ramené le résultat intermédiaire à 22 occurrences (19 HIGH, 3 CRITICAL), soit une réduction de 75,6 %.
 
-Les trois critiques restantes étaient `CVE-2026-41293`, `CVE-2026-43512` et `CVE-2026-43515` dans Tomcat Embed Core 11.0.21 ; Trivy indique 11.0.22 comme version corrigée. Les alertes hautes restantes incluaient Spring Framework 7.0.7, Spring Data Commons 4.0.5, PostgreSQL JDBC 42.7.10, Jackson 2.21.2 et OpenSSL 3.5.7-r0. Les versions correctives ont été surchargées dans Maven et les paquets Alpine sont mis à niveau à la construction. Le détail des identifiants, composants et versions est fourni dans `docs/ANALYSE_CVE.md`.
+Les trois critiques restantes étaient `CVE-2026-41293`, `CVE-2026-43512` et `CVE-2026-43515` dans Tomcat Embed Core 11.0.21 ; Trivy indique 11.0.22 comme version corrigée. Les alertes hautes restantes incluaient Spring Framework 7.0.7, Spring Data Commons 4.0.5, PostgreSQL JDBC 42.7.10, Jackson 2.21.2/3.1.2 et OpenSSL 3.5.7-r0. Les versions correctives ont été surchargées dans Maven et les paquets Alpine sont mis à niveau à la construction. Le scan final de l'image durcie produit **0 HIGH et 0 CRITICAL** avec `--ignore-unfixed`. Le détail des identifiants, composants et versions est fourni dans `docs/ANALYSE_CVE.md`.
 
 ### 6.3 Comparaison Manuelle vs Automatisée
 
@@ -129,7 +129,7 @@ La revue manuelle a trouvé les défauts métier les plus importants : permissio
 
 **6 — Documentation OpenAPI (CWE-200).** Avant, Swagger et `/v3/api-docs` étaient publics. Après, ces routes nécessitent le rôle `ADMIN` et restent désactivées par défaut dans l'image Docker.
 
-Validation locale : Semgrep custom est passé de 7 à 0 occurrence et Maven exécute 119 tests sans échec. Les captures `Fixed` de GitHub seront obtenues après deux exécutions successives de la pipeline : une avec alertes, puis une sur le commit corrigé.
+Validation locale : Semgrep custom est passé de 7 à 0 occurrence, Maven exécute 119 tests sans échec, le build Docker réussit et Trivy image passe de 90 à 0 occurrence HIGH/CRITICAL corrigible. Les captures `Fixed` de GitHub seront obtenues après deux exécutions successives de la pipeline : une avec alertes, puis une sur le commit corrigé.
 
 ### 7.2 Plan de Remédiation
 

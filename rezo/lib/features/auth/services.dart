@@ -126,20 +126,16 @@ class HttpAuthService implements AuthService {
   static String get defaultBaseUrl {
     final envBaseUrl = const String.fromEnvironment(
       'REZO_API_BASE_URL',
-      defaultValue: '',
+      defaultValue: 'https://api.rezo.example',
     ).trim();
-    if (envBaseUrl.isNotEmpty) {
-      return envBaseUrl;
+    final uri = Uri.tryParse(envBaseUrl);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw StateError('REZO_API_BASE_URL doit être une URL absolue valide');
     }
-    if (kIsWeb) {
-      return 'http://localhost:8080';
+    if (uri.scheme != 'https' && !kDebugMode) {
+      throw StateError('REZO_API_BASE_URL doit utiliser HTTPS hors debug');
     }
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      // Android emulator reaches host machine through 10.0.2.2
-      return 'http://10.0.2.2:8080';
-    }
-    // Windows/macOS/Linux/iOS simulator defaults to localhost backend.
-    return 'http://localhost:8080';
+    return envBaseUrl;
   }
 
   final String baseUrl;

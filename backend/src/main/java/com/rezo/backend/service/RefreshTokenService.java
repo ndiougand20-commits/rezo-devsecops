@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +37,7 @@ public class RefreshTokenService {
         String token = jwtService.generateRefreshToken(user);
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
-        refreshToken.setToken(token);
+        refreshToken.setToken(hashRefreshToken(token));
         refreshToken.setExpiresAt(jwtService.computeRefreshExpiryDateTime());
         refreshToken.setRevoked(false);
         refreshTokenRepository.save(refreshToken);
@@ -51,7 +55,7 @@ public class RefreshTokenService {
         }
 
         RefreshToken storedToken = refreshTokenRepository
-                .findByTokenAndRevokedFalse(rawRefreshToken)
+                .findByTokenAndRevokedFalse(hashRefreshToken(rawRefreshToken))
                 .orElseThrow(() -> new IllegalArgumentException("Refresh token inconnu ou revoque"));
 
         if (storedToken.getExpiresAt() != null && storedToken.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -81,7 +85,7 @@ public class RefreshTokenService {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             return;
         }
-        refreshTokenRepository.findByTokenAndRevokedFalse(rawRefreshToken)
+        refreshTokenRepository.findByTokenAndRevokedFalse(hashRefreshToken(rawRefreshToken))
                 .ifPresent(this::revoke);
     }
 
@@ -97,6 +101,15 @@ public class RefreshTokenService {
         token.setRevoked(true);
         token.setRevokedAt(LocalDateTime.now());
         refreshTokenRepository.save(token);
+    }
+
+    private String hashRefreshToken(String rawRefreshToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(rawRefreshToken.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 indisponible", exception);
+        }
     }
 
     public record TokenPair(String accessToken, String refreshToken) {

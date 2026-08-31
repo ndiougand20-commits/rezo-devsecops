@@ -18,6 +18,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -129,7 +133,8 @@ class AuthApiIntegrationTest {
         String rotatedRefreshToken = refreshJson.get("refreshToken").asText();
 
         assertThat(refreshTokenRepository.findByTokenAndRevokedFalse(refreshToken)).isEmpty();
-        assertThat(refreshTokenRepository.findByTokenAndRevokedFalse(rotatedRefreshToken)).isPresent();
+        assertThat(refreshTokenRepository.findByTokenAndRevokedFalse(rotatedRefreshToken)).isEmpty();
+        assertThat(refreshTokenRepository.findByTokenAndRevokedFalse(sha256(rotatedRefreshToken))).isPresent();
 
         String oldRefreshPayload = """
                 {
@@ -153,5 +158,11 @@ class AuthApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString())
                 .andExpect(jsonPath("$.refreshToken").isString());
+    }
+
+    private String sha256(String value) throws NoSuchAlgorithmException {
+        return HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8))
+        );
     }
 }

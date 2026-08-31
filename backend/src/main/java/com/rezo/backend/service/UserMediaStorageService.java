@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,7 +58,7 @@ public class UserMediaStorageService {
         String extension = extensionFromFilename(file.getOriginalFilename());
         boolean pdfMime = "application/pdf".equals(contentType);
         boolean pdfExt = "pdf".equalsIgnoreCase(extension);
-        if (!pdfMime && !pdfExt) {
+        if (!pdfMime || !pdfExt || !hasPdfSignature(file)) {
             throw new MediaValidationException("Seuls les fichiers PDF sont autorises pour les justificatifs");
         }
 
@@ -74,7 +76,7 @@ public class UserMediaStorageService {
         String extension = extensionFromFilename(file.getOriginalFilename());
         boolean pdfMime = "application/pdf".equals(contentType);
         boolean pdfExt = "pdf".equalsIgnoreCase(extension);
-        if (!pdfMime && !pdfExt) {
+        if (!pdfMime || !pdfExt || !hasPdfSignature(file)) {
             throw new MediaValidationException("Seuls les fichiers PDF sont autorises pour les offres");
         }
 
@@ -137,6 +139,16 @@ public class UserMediaStorageService {
     private void validateSize(MultipartFile file, long maxSize, String message) {
         if (file.getSize() > maxSize) {
             throw new MediaValidationException(message);
+        }
+    }
+
+    private boolean hasPdfSignature(MultipartFile file) {
+        try (InputStream input = file.getInputStream()) {
+            byte[] signature = input.readNBytes(5);
+            return signature.length == 5
+                    && "%PDF-".equals(new String(signature, StandardCharsets.US_ASCII));
+        } catch (IOException exception) {
+            throw new MediaValidationException("Impossible de verifier le contenu du fichier PDF");
         }
     }
 
