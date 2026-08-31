@@ -1,0 +1,17 @@
+# Deny everything by default. The builder only needs the Maven descriptor and sources.
+**
+
+!backend/
+!backend/pom.xml
+!backend/src/
+!backend/src/**
+
+# Defense in depth: local secrets and generated content must never enter a layer.
+**/.env
+**/.env.*
+**/target/
+**/build/
+**/.git/
+**/.idea/
+**/.vscode/
+**/*.log

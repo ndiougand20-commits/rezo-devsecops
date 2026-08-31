@@ -1,0 +1,122 @@
+{
+  "version": "2.6.2",
+  "summary": {
+    "id": "rezo-devsecops",
+    "title": "Rezo DevSecOps",
+    "owner": "Étudiant SUP de CO",
+    "description": "Application mobile Flutter, API REST Spring Boot, PostgreSQL et stockage de médias."
+  },
+  "detail": {
+    "contributors": [],
+    "diagramTop": 1,
+    "reviewer": "",
+    "threatTop": 8,
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "DFD Rezo",
+        "description": "Flux d'authentification, profils, messages, offres et médias au travers de deux frontières de confiance.",
+        "diagramType": "STRIDE",
+        "version": "2.6.2",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "cells": [
+          {
+            "id": "boundary-mobile",
+            "shape": "trust-boundary-box",
+            "zIndex": 1,
+            "position": { "x": 20, "y": 80 },
+            "size": { "width": 230, "height": 210 },
+            "data": { "name": "Frontière terminal mobile", "description": "Appareil utilisateur non fiable.", "type": "tm.BoundaryBox", "isTrustBoundary": true, "hasOpenThreats": false },
+            "threats": []
+          },
+          {
+            "id": "boundary-server",
+            "shape": "trust-boundary-box",
+            "zIndex": 1,
+            "position": { "x": 380, "y": 40 },
+            "size": { "width": 500, "height": 430 },
+            "data": { "name": "Frontière infrastructure serveur", "description": "Zone contrôlée hébergeant API, base et fichiers.", "type": "tm.BoundaryBox", "isTrustBoundary": true, "hasOpenThreats": false },
+            "threats": []
+          },
+          {
+            "id": "mobile",
+            "shape": "actor",
+            "zIndex": 2,
+            "position": { "x": 70, "y": 140 },
+            "size": { "width": 130, "height": 80 },
+            "data": { "name": "Application mobile Flutter", "description": "Client utilisé par les cinq rôles Rezo.", "type": "tm.Actor", "outOfScope": false, "providesAuthentication": false, "hasOpenThreats": true },
+            "threats": [
+              { "number": 1, "threatId": "T-01", "modelType": "STRIDE", "title": "Usurpation de session mobile", "type": "Spoofing", "description": "Vol d'un JWT ou refresh token permettant d'agir comme la victime.", "mitigation": "Secure storage, HTTPS, rotation et révocation des refresh tokens.", "severity": "High", "status": "Mitigated" },
+              { "number": 2, "threatId": "T-02", "modelType": "STRIDE", "title": "Altération du client", "type": "Tampering", "description": "Un client modifié contourne les validations d'interface et forge des rôles ou requêtes.", "mitigation": "Ne faire confiance à aucune validation mobile; contrôler schémas et autorisations dans l'API.", "severity": "High", "status": "Mitigated" }
+            ]
+          },
+          {
+            "id": "api",
+            "shape": "process",
+            "zIndex": 2,
+            "position": { "x": 450, "y": 170 },
+            "size": { "width": 130, "height": 100 },
+            "data": { "name": "API REST Spring Boot", "description": "Authentification, autorisation et logique métier.", "type": "tm.Process", "isWebApplication": true, "privilegeLevel": "service", "hasOpenThreats": true },
+            "threats": [
+              { "number": 3, "threatId": "T-03", "modelType": "STRIDE", "title": "Élévation de privilèges", "type": "Elevation of privilege", "description": "Un utilisateur standard appelle une fonction KPI ou destructive réservée à l'administration.", "mitigation": "Règles hasRole(ADMIN), méthode @PreAuthorize et tests d'autorisation.", "severity": "High", "status": "Mitigated" },
+              { "number": 4, "threatId": "T-04", "modelType": "STRIDE", "title": "Déni de service sur l'authentification", "type": "Denial of service", "description": "Des requêtes répétées sur login, signup ou refresh épuisent les ressources.", "mitigation": "Rate limiting par IP et compte, délais progressifs, supervision et quotas.", "severity": "Medium", "status": "Open" },
+              { "number": 5, "threatId": "T-05", "modelType": "STRIDE", "title": "Répudiation d'une action privilégiée", "type": "Repudiation", "description": "Une suppression ou un reset ne peut pas être attribué de façon fiable à son auteur.", "mitigation": "Journal d'audit immuable avec utilisateur, horodatage, action et résultat.", "severity": "Medium", "status": "Open" }
+            ]
+          },
+          {
+            "id": "database",
+            "shape": "store",
+            "zIndex": 2,
+            "position": { "x": 680, "y": 100 },
+            "size": { "width": 150, "height": 90 },
+            "data": { "name": "PostgreSQL", "description": "Profils, messages, offres et empreintes de tokens.", "type": "tm.Store", "storesCredentials": true, "isALog": false, "hasOpenThreats": true },
+            "threats": [
+              { "number": 6, "threatId": "T-06", "modelType": "STRIDE", "title": "Divulgation des données personnelles", "type": "Information disclosure", "description": "Une lecture non autorisée expose identités, messages et profils scolaires.", "mitigation": "Moindre privilège SQL, chiffrement au repos, sauvegardes chiffrées et contrôle d'accès objet.", "severity": "High", "status": "Open" },
+              { "number": 7, "threatId": "T-07", "modelType": "STRIDE", "title": "Altération des données métier", "type": "Tampering", "description": "Modification illégitime des rôles, packs, offres ou matches.", "mitigation": "Transactions, contraintes, validation métier, rôles et journal d'audit.", "severity": "High", "status": "Mitigated" }
+            ]
+          },
+          {
+            "id": "media-store",
+            "shape": "store",
+            "zIndex": 2,
+            "position": { "x": 680, "y": 310 },
+            "size": { "width": 150, "height": 90 },
+            "data": { "name": "Stockage médias", "description": "Photos et justificatifs PDF.", "type": "tm.Store", "storesCredentials": false, "isALog": false, "hasOpenThreats": true },
+            "threats": [
+              { "number": 8, "threatId": "T-08", "modelType": "STRIDE", "title": "Téléversement de contenu malveillant", "type": "Tampering", "description": "Un faux PDF ou média actif est stocké puis distribué comme document légitime.", "mitigation": "Taille limitée, MIME et extension concordants, signature magique, nom aléatoire et stockage non exécutable.", "severity": "High", "status": "Mitigated" }
+            ]
+          },
+          {
+            "id": "flow-mobile-api",
+            "shape": "flow",
+            "zIndex": 3,
+            "source": { "cell": "mobile" },
+            "target": { "cell": "api" },
+            "data": { "name": "HTTPS JSON/multipart + JWT", "description": "Authentification, profils, messages et médias.", "type": "tm.Flow", "protocol": "HTTPS", "isEncrypted": true, "isPublicNetwork": true, "isBidirectional": true, "hasOpenThreats": false },
+            "threats": []
+          },
+          {
+            "id": "flow-api-db",
+            "shape": "flow",
+            "zIndex": 3,
+            "source": { "cell": "api" },
+            "target": { "cell": "database" },
+            "data": { "name": "JPA/JDBC TLS", "description": "Données structurées et empreintes de tokens.", "type": "tm.Flow", "protocol": "PostgreSQL/TLS", "isEncrypted": true, "isPublicNetwork": false, "isBidirectional": true, "hasOpenThreats": false },
+            "threats": []
+          },
+          {
+            "id": "flow-api-media",
+            "shape": "flow",
+            "zIndex": 3,
+            "source": { "cell": "api" },
+            "target": { "cell": "media-store" },
+            "data": { "name": "Lecture/écriture fichiers", "description": "Photos et PDF validés.", "type": "tm.Flow", "protocol": "Filesystem", "isEncrypted": false, "isPublicNetwork": false, "isBidirectional": true, "hasOpenThreats": false },
+            "threats": []
+          }
+        ]
+      }
+    ]
+  },
+  "release_version": "1.0",
+  "released_at": "2026-08-31"
+}

@@ -1,0 +1,130 @@
+rules:
+  - id: rezo-java-sql-injection-concatenation
+    message: >-
+      Construction d'une requête SQL par concaténation. Utiliser une requête
+      paramétrée JPA/JdbcTemplate et transmettre les valeurs séparément.
+    severity: ERROR
+    languages: [java]
+    metadata:
+      cwe: CWE-89
+      owasp: A03:2021
+      category: security
+      technology: [java, spring]
+    patterns:
+      - pattern-either:
+          - pattern: $EM.createNativeQuery($SQL + $INPUT)
+          - pattern: $EM.createQuery($SQL + $INPUT)
+          - pattern: $JDBC.query($SQL + $INPUT, ...)
+          - pattern: $JDBC.queryForObject($SQL + $INPUT, ...)
+          - pattern: $JDBC.update($SQL + $INPUT, ...)
+      - pattern-not: $JDBC.query("...", ...)
+
+  - id: rezo-java-command-injection
+    message: >-
+      Une valeur dynamique atteint une commande système. Utiliser une API sans
+      shell, une liste blanche stricte et des arguments séparés.
+    severity: ERROR
+    languages: [java]
+    metadata:
+      cwe: CWE-78
+      owasp: A03:2021
+      category: security
+      technology: [java]
+    patterns:
+      - pattern-either:
+          - pattern: Runtime.getRuntime().exec($CMD)
+          - pattern: new ProcessBuilder($CMD, ...)
+      - pattern-not: Runtime.getRuntime().exec("...")
+      - pattern-not: new ProcessBuilder("...", ...)
+
+  - id: rezo-java-hardcoded-secret
+    message: >-
+      Secret potentiellement codé en dur. Lire cette valeur depuis un
+      gestionnaire de secrets ou une variable d'environnement.
+    severity: ERROR
+    languages: [java]
+    metadata:
+      cwe: CWE-798
+      owasp: A07:2021
+      category: security
+      technology: [java, spring]
+    patterns:
+      - pattern-either:
+          - pattern: String $VAR = "$VALUE";
+          - pattern: String $VAR = System.getenv(...);
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i).*(password|passwd|secret|api_?key|token|credential).*
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: .{8,}
+      - pattern-not: String $VAR = System.getenv(...);
+
+  - id: rezo-dart-insecure-http-backend
+    message: >-
+      URL backend en HTTP. Imposer HTTPS pour les builds de production et
+      limiter le trafic clair aux configurations de développement.
+    severity: ERROR
+    languages: [dart]
+    metadata:
+      cwe: CWE-319
+      owasp: A02:2021
+      category: security
+      technology: [dart, flutter]
+    pattern-regex: "['\"]http://(?:localhost|127\\.0\\.0\\.1|10\\.0\\.2\\.2)(?::[0-9]+)?['\"]"
+
+  - id: rezo-java-plaintext-refresh-token-persistence
+    message: >-
+      Un jeton semble être persisté directement. Stocker uniquement une
+      empreinte non réversible du refresh token.
+    severity: WARNING
+    languages: [java]
+    metadata:
+      cwe: CWE-312
+      owasp: A02:2021
+      category: security
+      technology: [java, spring]
+    patterns:
+      - pattern: $OBJECT.setToken($VALUE);
+      - pattern-not: $OBJECT.setToken(hashRefreshToken(...));
+      - metavariable-regex:
+          metavariable: $OBJECT
+          regex: (?i).*refresh.*token.*
+
+  - id: rezo-spring-public-openapi
+    message: >-
+      Swagger/OpenAPI est explicitement public. Désactiver la documentation en
+      production ou la réserver à un rôle administrateur et au réseau interne.
+    severity: WARNING
+    languages: [java]
+    metadata:
+      cwe: CWE-200
+      owasp: A05:2021
+      category: security
+      technology: [java, spring]
+    pattern-either:
+      - pattern: $AUTH.requestMatchers(..., "/swagger-ui/**", ...).permitAll()
+      - pattern: $AUTH.requestMatchers(..., "/v3/api-docs/**", ...).permitAll()
+
+  - id: rezo-java-upload-type-or-extension
+    message: >-
+      Validation de fichier permissive : le MIME déclaré ou l'extension suffit.
+      Exiger les deux et détecter le contenu réel côté serveur.
+    severity: ERROR
+    languages: [java]
+    metadata:
+      cwe: CWE-434
+      owasp: A04:2021
+      category: security
+      technology: [java, spring]
+    patterns:
+      - pattern: |
+          if (!$MIME && !$EXT) {
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $MIME
+          regex: (?i).*mime.*
+      - metavariable-regex:
+          metavariable: $EXT
+          regex: (?i).*ext.*

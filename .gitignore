@@ -25,6 +25,15 @@ Thumbs.db
 *.log
 *.tmp
 
+# Security scan outputs and local evidence drafts
+reports/
+*.sarif
+trivy-cache/
+
+# Backend runtime uploads
+backend/uploads/
+uploads/
+
 # Local secrets (keep example files versioned)
 .env
 **/.env
