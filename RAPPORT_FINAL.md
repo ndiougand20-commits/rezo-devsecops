@@ -91,6 +91,12 @@ Une **CWE** décrit une famille générique de faiblesse dans la conception ou l
 
 ## 6. Résultats
 
+### 6.0 Limitation rencontrée sur GitHub Actions
+
+La pipeline DevSecOps est présente dans le dépôt public et une nouvelle exécution a été déclenchée après le passage du dépôt en visibilité publique. Cependant, GitHub bloque les jobs avant leur démarrage avec le message : `The job was not started because your account is locked due to a billing issue.` Ce blocage provient d'une facture GitHub Copilot impayée rattachée au compte propriétaire du dépôt. Il intervient au niveau du compte GitHub, avant l'allocation des runners et avant l'exécution du workflow ; il ne résulte donc ni d'une erreur du fichier YAML ni d'un échec des contrôles de sécurité.
+
+En conséquence, les captures d'une pipeline verte, de la page **Security → Code scanning** et des alertes marquées **Fixed** ne peuvent pas encore être produites. Les contrôles équivalents ont néanmoins été exécutés localement : les 119 tests Maven passent, Semgrep custom ne retourne plus aucune occurrence et le scan Trivy de l'image finale retourne 0 vulnérabilité corrigible de niveau HIGH ou CRITICAL. Dès la régularisation de la facture Copilot et le déverrouillage du compte, la pipeline pourra être relancée afin de générer les preuves GitHub manquantes.
+
 ### 6.1 Tableau Complet des Alertes
 
 | Outil | Fichier | Vulnérabilité | CWE/CVE | Sévérité | Statut local |
