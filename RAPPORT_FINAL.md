@@ -1,8 +1,8 @@
 # RAPPORT FINAL : Examen DevSecOps
 # Rezo
 
-**Étudiant(e) :** À compléter  
-**Matricule :** À compléter  
+**Étudiant(e) :** Ndiouga NDIAYE  
+**Matricule :** 1058860  
 **Date :** 31 août 2026  
 **Repo GitHub :** https://github.com/ndiougand20-commits/rezo-devsecops  
 **Stack technique :** Flutter/Dart, Java, Spring Boot, Spring Security, JWT, PostgreSQL, Docker
@@ -71,6 +71,14 @@ Le scan de référence avec Semgrep OSS 1.174.0 a validé les sept règles et an
 
 ## 5. Pipeline DevSecOps
 
+### 5.0 Limitation rencontrée sur GitHub Actions
+
+Au moment de la remise, l'exécution distante de la pipeline est bloquée par un problème de facturation externe au projet. Mon compte GitHub comporte une facture GitHub Copilot impayée ; GitHub verrouille par conséquent le démarrage de tous les jobs Actions avec le message : `The job was not started because your account is locked due to a billing issue.` Le dépôt a pourtant été rendu public et le workflow utilise uniquement des runners standards `ubuntu-latest`, normalement gratuits pour un dépôt public.
+
+Deux tentatives sont visibles dans l'historique GitHub Actions. La première a échoué au démarrage alors que le dépôt était encore privé. Une seconde exécution a été déclenchée après son passage en public, mais GitHub l'a également arrêtée avant l'allocation des runners en raison du verrou appliqué au compte. Aucun outil de la pipeline — GitLeaks, Semgrep, Snyk ou Trivy — n'a donc pu commencer son exécution distante. Cet échec ne provient ni du code ni de la syntaxe du workflow.
+
+Pour ne pas masquer cette limitation, les résultats annoncés dans ce rapport comme « locaux » proviennent d'exécutions reproductibles réalisées sur la machine de développement : 119 tests Maven réussis, 0 alerte Semgrep custom après correction, build Docker réussi et 0 vulnérabilité HIGH/CRITICAL corrigible dans l'image finale avec Trivy. Les captures d'une pipeline verte, de GitHub Security et des alertes marquées `Fixed` restent impossibles à produire tant que la facture Copilot n'est pas régularisée et le compte GitHub déverrouillé. Après régularisation, le workflow pourra être relancé sans modification de son architecture afin de générer ces preuves.
+
 ### 5.1 Architecture de la Pipeline
 
 La pipeline `.github/workflows/devsecops.yml` est déclenchée sur chaque push vers `main`, chaque pull request et manuellement. Trois contrôles démarrent en parallèle : GitLeaks inspecte tout l'historique Git, Semgrep exécute les règles locales ainsi que `p/owasp-top-ten` et `p/nodejs`, et le job SCA combine Snyk avec Trivy filesystem. Tous génèrent du SARIF envoyé vers **Security → Code scanning**.
@@ -90,12 +98,6 @@ Après le push, GitHub démarre la pipeline et checkout l'historique complet (`f
 Une **CWE** décrit une famille générique de faiblesse dans la conception ou le code. Par exemple, Semgrep a signalé `CWE-434` pour la validation permissive des fichiers téléversés. Une **CVE** identifie une vulnérabilité précise dans une version publiée d'un composant tiers. Les exemples CVE issus du scan Trivy/Snyk sont consignés dans la section 6.2 après résolution des dépendances transitives.
 
 ## 6. Résultats
-
-### 6.0 Limitation rencontrée sur GitHub Actions
-
-La pipeline DevSecOps est présente dans le dépôt public et une nouvelle exécution a été déclenchée après le passage du dépôt en visibilité publique. Cependant, GitHub bloque les jobs avant leur démarrage avec le message : `The job was not started because your account is locked due to a billing issue.` Ce blocage provient d'une facture GitHub Copilot impayée rattachée au compte propriétaire du dépôt. Il intervient au niveau du compte GitHub, avant l'allocation des runners et avant l'exécution du workflow ; il ne résulte donc ni d'une erreur du fichier YAML ni d'un échec des contrôles de sécurité.
-
-En conséquence, les captures d'une pipeline verte, de la page **Security → Code scanning** et des alertes marquées **Fixed** ne peuvent pas encore être produites. Les contrôles équivalents ont néanmoins été exécutés localement : les 119 tests Maven passent, Semgrep custom ne retourne plus aucune occurrence et le scan Trivy de l'image finale retourne 0 vulnérabilité corrigible de niveau HIGH ou CRITICAL. Dès la régularisation de la facture Copilot et le déverrouillage du compte, la pipeline pourra être relancée afin de générer les preuves GitHub manquantes.
 
 ### 6.1 Tableau Complet des Alertes
 
